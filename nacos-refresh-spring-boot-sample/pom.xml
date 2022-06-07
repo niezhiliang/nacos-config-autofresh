@@ -28,7 +28,7 @@
         </dependency>
         <dependency>
             <groupId>com.niezhiliang</groupId>
-            <artifactId>nacos-refresh--spring-boot-starter</artifactId>
+            <artifactId>nacos-refresh-spring-boot-starter</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
