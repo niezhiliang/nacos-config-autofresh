@@ -7,3 +7,5 @@ nacos:
   config:
     auto-refresh: true
 ```
+
+### 项目开发中，后续功能完善以后会推到maven中央仓库
