@@ -9,7 +9,7 @@
             <version>${latest.version}</version>
         </dependency>
 ```
-- 必须开启nacos该配置项()
+- 开启配置项
 ```yaml
 nacos:
   config:
