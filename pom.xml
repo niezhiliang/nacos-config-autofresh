@@ -9,8 +9,8 @@
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
     <modules>
-        <module>nacos-refresh-spring-boot-sample</module>
-        <module>nacos-refresh-spring-boot-starter</module>
+        <module>nacos-config-refresh-spring-boot-sample</module>
+        <module>nacos-config-refresh-spring-boot-starter</module>
     </modules>
 
     <properties>
