@@ -1,0 +1,8 @@
+nacos:
+  config:
+    type: yaml
+    server-addr: 127.0.0.1:8848
+    data-id: test-autorefresh
+    bootstrap:
+      enable: true
+    auto-refresh: true
