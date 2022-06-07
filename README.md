@@ -3,11 +3,11 @@
 ### 前置条件
 - 引入maven依赖
 ```pom
-        <dependency>
-            <groupId>com.niezhiliang</groupId>
-            <artifactId>nacos-refresh--spring-boot-starter</artifactId>
-            <version>${latest.version}</version>
-        </dependency>
+<dependency>
+    <groupId>com.niezhiliang</groupId>
+    <artifactId>nacos-refresh--spring-boot-starter</artifactId>
+    <version>${latest.version}</version>
+</dependency>
 ```
 - 开启配置项
 ```yaml
