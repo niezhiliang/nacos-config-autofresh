@@ -5,7 +5,7 @@
 ```pom
 <dependency>
     <groupId>com.niezhiliang</groupId>
-    <artifactId>nacos-refresh--spring-boot-starter</artifactId>
+    <artifactId>nacos-refresh-spring-boot-starter</artifactId>
     <version>${latest.version}</version>
 </dependency>
 ```
