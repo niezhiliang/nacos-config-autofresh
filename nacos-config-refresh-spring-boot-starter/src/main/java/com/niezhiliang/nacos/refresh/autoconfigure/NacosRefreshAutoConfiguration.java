@@ -14,8 +14,8 @@ import org.springframework.context.annotation.Configuration;
 public class NacosRefreshAutoConfiguration {
 
     @Bean
-    public NacosRefreshAnnotationPostProcess nacosRefreshAnnotationPostProcess() {
-        return new NacosRefreshAnnotationPostProcess();
+    public NacosConfigRefreshAnnotationPostProcess nacosRefreshAnnotationPostProcess() {
+        return new NacosConfigRefreshAnnotationPostProcess();
     }
 
 //    @Bean
