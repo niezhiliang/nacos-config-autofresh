@@ -1,6 +1,5 @@
 package com.niezhiliang.nacos.refresh.autoconfigure;
 
-import com.niezhiliang.nacos.refresh.autoconfigure.listener.RefreshListener;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,8 +18,8 @@ public class NacosRefreshAutoConfiguration {
         return new NacosRefreshAnnotationPostProcess();
     }
 
-    @Bean
-    public RefreshListener refreshListener() {
-        return new RefreshListener();
-    }
+//    @Bean
+//    public RefreshListener refreshListener() {
+//        return new RefreshListener();
+//    }
 }
