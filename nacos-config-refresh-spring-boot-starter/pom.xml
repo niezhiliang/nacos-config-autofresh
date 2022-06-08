@@ -19,7 +19,7 @@
     </properties>
 
 
-    <name>nacos-refresh-spring-boot-starter</name>
+    <name>nacos-config-refresh-spring-boot-starter</name>
     <url>http://maven.apache.org</url>
     <description>nacos config auto refresh springboot starter</description>
 
