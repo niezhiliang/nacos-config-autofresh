@@ -13,7 +13,7 @@ import com.niezhiliang.nacos.refresh.autoconfigure.postprocess.NacosConfigRefres
  */
 @Configuration
 @ConditionalOnProperty(prefix = "nacos.config", name = "auto-refresh", havingValue = "true")
-public class NacosRefreshAutoConfiguration {
+public class NacosConfigRefreshAutoConfiguration {
 
     @Bean
     public NacosConfigRefreshAnnotationPostProcess nacosRefreshAnnotationPostProcess() {
