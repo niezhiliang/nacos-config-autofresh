@@ -1,5 +1,7 @@
 package com.niezhiliang.nacos.refresh.sample.controller;
 
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
@@ -16,8 +18,8 @@ import com.alibaba.nacos.api.config.annotation.NacosValue;
 @RestController
 public class RefreshController implements EnvironmentAware {
 
-    @Value("${spring.application.name}")
-    public String valueName;
+    @Value("${spring.count}")
+    public Date valueName;
 
     @NacosValue("${spring.application.name}")
     public String nacosValueName;
