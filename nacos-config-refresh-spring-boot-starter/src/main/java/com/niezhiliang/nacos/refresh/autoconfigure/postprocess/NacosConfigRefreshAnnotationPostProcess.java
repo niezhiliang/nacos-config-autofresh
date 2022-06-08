@@ -4,6 +4,7 @@ import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,8 +26,6 @@ import com.alibaba.nacos.api.config.annotation.NacosConfigListener;
 import com.alibaba.nacos.api.config.annotation.NacosValue;
 import com.niezhiliang.nacos.refresh.autoconfigure.utils.NacosConfigPaserUtils;
 import com.niezhiliang.nacos.refresh.autoconfigure.utils.PlaceholderUtils;
-import com.sun.org.slf4j.internal.Logger;
-import com.sun.org.slf4j.internal.LoggerFactory;
 
 /**
  * @author niezhiliang
@@ -36,7 +35,7 @@ import com.sun.org.slf4j.internal.LoggerFactory;
 public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationBeanPostProcessor
     implements EnvironmentAware {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = Logger.getLogger(NacosConfigRefreshAnnotationPostProcess.class.getName());
 
     /**
      * nacos对应的propertySource的类名称
@@ -220,15 +219,11 @@ public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationB
                 Object value = conversionService.convert(newValue, fieldInstance.field.getType());
                 fieldInstance.field.set(fieldInstance.bean, value);
             } catch (Throwable e) {
-                if (logger.isDebugEnabled()) {
-                    logger.error("Can't update value of the " + fieldInstance.field.getName() + " (field) in "
-                        + fieldInstance.bean.getClass().getSimpleName() + " (bean)", e);
-                }
+                logger.warning("Can't update value of the " + fieldInstance.field.getName() + " (field) in "
+                    + fieldInstance.bean.getClass().getSimpleName() + " (bean)");
             }
-            if (logger.isDebugEnabled()) {
-                logger.debug("nacos-config-refresh: bean:{} field: {} oldValue = {} newValue = {}",
-                    fieldInstance.bean.getClass().getSimpleName(), fieldInstance.field.getName(), oldValue, newValue);
-            }
+            logger.info("Nacos-config-refresh: " + fieldInstance.bean.getClass().getSimpleName() + "#"
+                + fieldInstance.field.getName() + " field value changed from [" + oldValue + "] to [" + newValue + "]");
         }
     }
 }
