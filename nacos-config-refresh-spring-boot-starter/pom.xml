@@ -2,14 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>nacos-autofresh</artifactId>
-        <groupId>com.niezhiliang</groupId>
-        <version>1.0-SNAPSHOT</version>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
 
+
+    <groupId>com.niezhiliang</groupId>
     <artifactId>nacos-config-refresh-spring-boot-starter</artifactId>
+    <version>0.0.1</version>
+    <packaging>jar</packaging>
+    <modelVersion>4.0.0</modelVersion>
 
 
     <properties>
@@ -29,7 +28,7 @@
         <developer>
             <name>niezhiliang</name>
             <email>nzlsgg@163.com</email>
-            <url>http://www.niezhiliang.cn</url>
+            <url>https://github.com/niezhiliang</url>
         </developer>
     </developers>
 
@@ -143,13 +142,13 @@
             <name>GNU General Public License v3.0</name>
             <url>http://www.gnu.org/licenses/agpl-3.0.html</url>
             <distribution>repo</distribution>
-            <comments>alipay wechat some pay strategy</comments>
+            <comments>nacos config auto refresh springboot starter</comments>
         </license>
     </licenses>
     <scm>
-        <connection>scm:git://https://github.com/easy-pay/spring-boot-easy-pay.git</connection>
-        <developerConnection>scm:git:https://github.com/easy-pay/spring-boot-easy-pay.git</developerConnection>
-        <url>https://github.com/easy-pay/spring-boot-easy-pay</url>
+        <connection>scm:git://https://github.com/niezhiliang/nacos-config-autofresh.git</connection>
+        <developerConnection>scm:git:https://github.com/niezhiliang/nacos-config-autofresh.git</developerConnection>
+        <url>https://github.com/niezhiliang/nacos-config-autofresh</url>
         <tag>v${project.version}</tag>
     </scm>
 
