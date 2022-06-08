@@ -1,5 +1,6 @@
 package com.niezhiliang.nacos.refresh.autoconfigure;
 
+import com.niezhiliang.nacos.refresh.autoconfigure.postprocess.NacosConfigRefreshAnnotationPostProcess;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

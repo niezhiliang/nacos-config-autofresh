@@ -1,4 +1,4 @@
-package com.niezhiliang.nacos.refresh.autoconfigure;
+package com.niezhiliang.nacos.refresh.autoconfigure.postprocess;
 
 import com.alibaba.nacos.api.config.ConfigChangeItem;
 import com.alibaba.nacos.api.config.PropertyChangeType;
@@ -59,7 +59,17 @@ public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationB
     @Override
     protected Object doGetInjectedBean(AnnotationAttributes annotationAttributes, Object o, String s, Class<?> aClass,
                                        InjectionMetadata.InjectedElement injectedElement) throws Exception {
-        return annotationAttributes.get("value");
+        String key = (String) annotationAttributes.get("value");
+        int startIndex = key.indexOf(PLACEHOLDER_PREFIX);
+        int endIndex = findPlaceholderEndIndex(key, startIndex);
+        // 截取掉${}符号
+        key = key.substring(startIndex + 2, endIndex);
+
+        Field field = (Field)injectedElement.getMember();
+        // 属性记录到缓存中
+        addFieldInstance(key, field, o);
+
+        return currentPlaceholderConfigMap.get(key);
     }
 
     public NacosConfigRefreshAnnotationPostProcess() {
@@ -69,21 +79,7 @@ public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationB
     @Override
     protected String buildInjectedObjectCacheKey(AnnotationAttributes annotationAttributes, Object o, String s,
                                                  Class<?> aClass, InjectionMetadata.InjectedElement injectedElement) {
-        Field field = (Field)injectedElement.getMember();
-        String key = null;
-        if (field.isAnnotationPresent(Value.class)) {
-
-            key = field.getAnnotation(Value.class).value();
-        } else if (field.isAnnotationPresent(NacosValue.class)) {
-            key = field.getAnnotation(NacosValue.class).value();
-        }
-        int startIndex = key.indexOf(PLACEHOLDER_PREFIX);
-        int endIndex = findPlaceholderEndIndex(key, startIndex);
-        // 截取掉${}符号
-        key = key.substring(startIndex + 2, endIndex);
-        // 属性记录到缓存中
-        addFieldInstance(key, field, o);
-        return injectedElement.getMember().getName();
+        return o.getClass().getName() + "#" + injectedElement.getMember().getName();
     }
 
     @Override
