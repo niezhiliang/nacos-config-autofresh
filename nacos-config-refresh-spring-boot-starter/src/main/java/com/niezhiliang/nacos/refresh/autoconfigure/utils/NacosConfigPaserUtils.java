@@ -12,7 +12,7 @@ import com.alibaba.nacos.api.config.PropertyChangeType;
  */
 public class NacosConfigPaserUtils {
     /**
-     * 比较两个属性，赛选出值发生变更的配置 nacos中的源码
+     * 比较两个属性，筛选出值发生变更的配置 nacos中的源码
      *
      * @param oldMap
      * @param newMap

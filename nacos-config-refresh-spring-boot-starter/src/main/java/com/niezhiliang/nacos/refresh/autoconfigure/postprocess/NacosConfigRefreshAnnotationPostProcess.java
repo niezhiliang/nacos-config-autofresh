@@ -29,7 +29,7 @@ import com.niezhiliang.nacos.refresh.autoconfigure.utils.PlaceholderUtils;
 
 /**
  * @author niezhiliang
- * @version v 0.0.1
+ * @version v0.0.1
  * @date 2022/6/7 17:31
  */
 public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationBeanPostProcessor
@@ -173,7 +173,7 @@ public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationB
             newProps.load(new StringReader(newContent));
             newConfigMap = new HashMap<>((Map)newProps);
         }
-        // 赛选出正确的配置
+        // 筛选出正确的配置
         return NacosConfigPaserUtils.getFlattenedMap(newConfigMap);
     }
 
