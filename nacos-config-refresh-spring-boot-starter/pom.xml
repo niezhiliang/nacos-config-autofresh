@@ -39,12 +39,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
-        <!--非必需,该依赖作用是在使用IDEA编写配置文件有代码提示-->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-configuration-processor</artifactId>
-            <optional>true</optional>
-        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure-processor</artifactId>
@@ -154,7 +148,7 @@
             <name>GNU General Public License v3.0</name>
             <url>http://www.gnu.org/licenses/agpl-3.0.html</url>
             <distribution>repo</distribution>
-            <comments>alipay  wechat  some pay strategy</comments>
+            <comments>alipay wechat some pay strategy</comments>
         </license>
     </licenses>
     <scm>

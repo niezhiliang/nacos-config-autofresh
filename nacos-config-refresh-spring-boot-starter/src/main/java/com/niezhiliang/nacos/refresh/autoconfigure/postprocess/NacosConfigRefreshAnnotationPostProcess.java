@@ -1,12 +1,10 @@
 package com.niezhiliang.nacos.refresh.autoconfigure.postprocess;
 
-import com.alibaba.nacos.api.config.ConfigChangeItem;
-import com.alibaba.nacos.api.config.PropertyChangeType;
-import com.alibaba.nacos.api.config.annotation.NacosConfigListener;
-import com.alibaba.nacos.api.config.annotation.NacosValue;
-import com.alibaba.spring.beans.factory.annotation.AbstractAnnotationBeanPostProcessor;
-import com.sun.org.slf4j.internal.Logger;
-import com.sun.org.slf4j.internal.LoggerFactory;
+import java.io.StringReader;
+import java.lang.reflect.Field;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.EnvironmentAware;
@@ -20,29 +18,53 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 import org.yaml.snakeyaml.Yaml;
 
-import java.lang.reflect.Field;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import com.alibaba.nacos.api.config.ConfigChangeItem;
+import com.alibaba.nacos.api.config.ConfigType;
+import com.alibaba.nacos.api.config.PropertyChangeType;
+import com.alibaba.nacos.api.config.annotation.NacosConfigListener;
+import com.alibaba.nacos.api.config.annotation.NacosValue;
+import com.alibaba.spring.beans.factory.annotation.AbstractAnnotationBeanPostProcessor;
+import com.sun.org.slf4j.internal.Logger;
+import com.sun.org.slf4j.internal.LoggerFactory;
 
 /**
  * @author niezhiliang
  * @version v 0.0.1
  * @date 2022/6/7 17:31
  */
-public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationBeanPostProcessor implements EnvironmentAware {
-
-    //, ApplicationListener<NacosConfigReceivedEvent>
+public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationBeanPostProcessor
+    implements EnvironmentAware {
 
     /**
      * nacos对应的propertySource的类名称
      */
-    private static final String NACOS_PROPERTY_SOURCE_CLASS_NAME = "com.alibaba.nacos.spring.core.env.NacosPropertySource";
+    private static final String NACOS_PROPERTY_SOURCE_CLASS_NAME =
+        "com.alibaba.nacos.spring.core.env.NacosPropertySource";
 
+    /**
+     * nacos配置文件类型
+     */
+    private static final String NACOS_CONFIG_TYPE = "nacos.config.type";
+
+    /**
+     * nacos配置data-id的占位符
+     */
+    private static final String NACOS_DATA_ID_PLACEHOLDER = "${nacos.config.data-id}";
+
+    /**
+     * 占位符前缀
+     */
     private static final String PLACEHOLDER_PREFIX = "${";
 
+    /**
+     * 占位符后缀
+     */
     private static final String PLACEHOLDER_END = "}";
 
-
+    /**
+     * spring环境对象
+     */
+    private StandardEnvironment standardEnvironment;
 
     /**
      * 存放被@Value和@NacosValue修饰的属性 key = 占位符 value = 属性集合
@@ -58,8 +80,8 @@ public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationB
 
     @Override
     protected Object doGetInjectedBean(AnnotationAttributes annotationAttributes, Object o, String s, Class<?> aClass,
-                                       InjectionMetadata.InjectedElement injectedElement) throws Exception {
-        String key = (String) annotationAttributes.get("value");
+        InjectionMetadata.InjectedElement injectedElement) throws Exception {
+        String key = (String)annotationAttributes.get("value");
         int startIndex = key.indexOf(PLACEHOLDER_PREFIX);
         int endIndex = findPlaceholderEndIndex(key, startIndex);
         // 截取掉${}符号
@@ -78,13 +100,13 @@ public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationB
 
     @Override
     protected String buildInjectedObjectCacheKey(AnnotationAttributes annotationAttributes, Object o, String s,
-                                                 Class<?> aClass, InjectionMetadata.InjectedElement injectedElement) {
+        Class<?> aClass, InjectionMetadata.InjectedElement injectedElement) {
         return o.getClass().getName() + "#" + injectedElement.getMember().getName();
     }
 
     @Override
     public void setEnvironment(Environment environment) {
-        StandardEnvironment standardEnvironment = (StandardEnvironment)environment;
+        this.standardEnvironment = (StandardEnvironment)environment;
         for (PropertySource<?> propertySource : standardEnvironment.getPropertySources()) {
             // 筛选出nacos的配置
             if (propertySource.getClass().getName().equals(NACOS_PROPERTY_SOURCE_CLASS_NAME)) {
@@ -97,22 +119,30 @@ public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationB
         }
     }
 
-
     /**
-     * 该注解支持占位符解析， 需要在拉取完配置后将nacos配置的data-id放到environment对象中
-     * 监听nacos配置更新操作
+     * 该注解支持占位符解析， 需要在拉取完配置后将nacos配置的data-id放到environment对象中 监听nacos配置更新操作
+     * 
      * @param newContent
      * @throws Exception
      */
-    @NacosConfigListener(dataId = "${nacos.config.data-id}")
+    @NacosConfigListener(dataId = NACOS_DATA_ID_PLACEHOLDER)
     public void onChange(String newContent) throws Exception {
-        // 解析nacos推送的配置内容为键值对 //TODO 如果是propterties文件需要另外解析方式
-        Map<String, Object> newConfigMap = (new Yaml()).load(newContent);
+        Map<String, Object> newConfigMap = new HashMap<>(16);
+        // 解析nacos推送的配置内容为键值对
+        String type = standardEnvironment.getProperty(NACOS_CONFIG_TYPE);
+        if (ConfigType.YAML.getType().equals(type)) {
+            newConfigMap = (new Yaml()).load(newContent);
+        } else if (ConfigType.PROPERTIES.getType().equals(type)) {
+            Properties newProps = new Properties();
+            newProps.load(new StringReader(newContent));
+            newConfigMap = new HashMap<>((Map)newProps);
+        }
         // 赛选出正确的配置
         newConfigMap = getFlattenedMap(newConfigMap);
         try {
             // 对比两次配置内容，筛选出变更后的配置项
-            Map<String, ConfigChangeItem> stringConfigChangeItemMap = filterChangeData(currentPlaceholderConfigMap, newConfigMap);
+            Map<String, ConfigChangeItem> stringConfigChangeItemMap =
+                filterChangeData(currentPlaceholderConfigMap, newConfigMap);
             for (String key : stringConfigChangeItemMap.keySet()) {
                 ConfigChangeItem item = stringConfigChangeItemMap.get(key);
                 updateFieldValue(key, item.getNewValue());
@@ -120,19 +150,18 @@ public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationB
         } finally {
             // 当前配置指向最新的配置
             currentPlaceholderConfigMap = newConfigMap;
-            // TODO 新属性需要写入enviopment对象中
         }
     }
 
-
     /**
-     * 比较两个属性，赛选出值发生变更的配置
+     * 比较两个属性，赛选出值发生变更的配置 nacos中的源码
+     * 
      * @param oldMap
      * @param newMap
      * @return
      */
     protected Map<String, ConfigChangeItem> filterChangeData(Map oldMap, Map newMap) {
-        Map<String, ConfigChangeItem> result = new HashMap<String, ConfigChangeItem>(16);
+        Map<String, ConfigChangeItem> result = new HashMap<>(16);
         for (Iterator<Map.Entry<String, Object>> entryItr = oldMap.entrySet().iterator(); entryItr.hasNext();) {
             Map.Entry<String, Object> e = entryItr.next();
             ConfigChangeItem cci = null;
@@ -162,12 +191,25 @@ public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationB
         return result;
     }
 
+    /**
+     * nacos中的源码
+     * 
+     * @param source
+     * @return
+     */
     private final Map<String, Object> getFlattenedMap(Map<String, Object> source) {
         Map<String, Object> result = new LinkedHashMap<String, Object>(128);
         buildFlattenedMap(result, source, null);
         return result;
     }
 
+    /**
+     * nacos中的源码
+     * 
+     * @param result
+     * @param source
+     * @param path
+     */
     private void buildFlattenedMap(Map<String, Object> result, Map<String, Object> source, String path) {
         for (Iterator<Map.Entry<String, Object>> itr = source.entrySet().iterator(); itr.hasNext();) {
             Map.Entry<String, Object> e = itr.next();
@@ -215,6 +257,7 @@ public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationB
 
     /**
      * 将被@Value和@NacosValue修饰的属性，以键值对的形式存放到当前属性配置集合中
+     * 
      * @param key
      * @param field
      * @param bean
@@ -228,7 +271,6 @@ public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationB
         placeholderValueTargetMap.put(key, fieldInstances);
     }
 
-
     private void updateFieldValue(String key, Object value) {
         List<FieldInstance> fieldInstances = placeholderValueTargetMap.get(key);
         for (FieldInstance fieldInstance : fieldInstances) {
@@ -237,9 +279,8 @@ public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationB
                 fieldInstance.field.set(fieldInstance.bean, value);
             } catch (Throwable e) {
                 if (logger.isDebugEnabled()) {
-                    logger.error(
-                            "Can't update value of the " + fieldInstance.field.getName() + " (field) in "
-                                    + fieldInstance.bean.getClass().getSimpleName()+ " (bean)", e);
+                    logger.error("Can't update value of the " + fieldInstance.field.getName() + " (field) in "
+                        + fieldInstance.bean.getClass().getSimpleName() + " (bean)", e);
                 }
             }
 
