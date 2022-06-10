@@ -53,6 +53,11 @@
             <artifactId>snakeyaml</artifactId>
             <version>1.27</version>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba.nacos</groupId>
+            <artifactId>nacos-spring-context</artifactId>
+            <version>0.3.6</version>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>
