@@ -1,19 +1,7 @@
 package com.niezhiliang.nacos.refresh.autoconfigure.postprocess;
 
-import com.alibaba.nacos.client.config.utils.MD5;
-import com.alibaba.nacos.spring.context.event.config.NacosConfigReceivedEvent;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.TypeConverter;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.annotation.InjectionMetadata;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.EnvironmentAware;
-import org.springframework.core.annotation.AnnotationAttributes;
-import org.springframework.core.env.Environment;
-import org.springframework.util.ReflectionUtils;
+import static org.springframework.core.annotation.AnnotationUtils.getAnnotation;
+import static org.springframework.util.SystemPropertyUtils.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -24,8 +12,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.springframework.core.annotation.AnnotationUtils.getAnnotation;
-import static org.springframework.util.SystemPropertyUtils.*;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.TypeConverter;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.annotation.InjectionMetadata;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.env.Environment;
+import org.springframework.util.ReflectionUtils;
+
+import com.niezhiliang.nacos.refresh.autoconfigure.utils.MD5;
 
 /**
  * @author haoxiaoyong
@@ -34,8 +35,7 @@ import static org.springframework.util.SystemPropertyUtils.*;
  * @blog www.haoxiaoyong.cn
  */
 public class ValueAnnotationBeanPostProcessor extends AbstractAnnotationBeanPostProcessor
-        implements BeanFactoryAware, EnvironmentAware, ApplicationListener<NacosConfigReceivedEvent> {
-
+    implements BeanFactoryAware, EnvironmentAware, ApplicationListener {
 
     /**
      * placeholder, nacosValueTarget
@@ -46,30 +46,40 @@ public class ValueAnnotationBeanPostProcessor extends AbstractAnnotationBeanPost
 
     private Environment environment;
 
+    /**
+     * nacos事件变更后推送事件
+     */
+    private static final String NACOS_CONFIG_REVEIVED_EVENT_CLASS_NAME =
+        "com.alibaba.nacos.spring.context.event.config.NacosConfigReceivedEvent";
+
     public ValueAnnotationBeanPostProcessor() {
         super(Value.class);
     }
 
     @Override
-    protected Object doGetInjectedBean(AnnotationAttributes attributes, Object bean, String beanName, Class<?> injectedType, InjectionMetadata.InjectedElement injectedElement) throws Exception {
-        String annotationValue = (String) attributes.get("value");
+    protected Object doGetInjectedBean(AnnotationAttributes attributes, Object bean, String beanName,
+        Class<?> injectedType, InjectionMetadata.InjectedElement injectedElement) throws Exception {
+        String annotationValue = (String)attributes.get("value");
         String value = beanFactory.resolveEmbeddedValue(annotationValue);
         Member member = injectedElement.getMember();
         if (member instanceof Field) {
-            return convertIfNecessary((Field) member, value);
+            return convertIfNecessary((Field)member, value);
         }
         return null;
     }
 
-
     @Override
-    protected String buildInjectedObjectCacheKey(AnnotationAttributes attributes, Object bean, String beanName, Class<?> injectedType, InjectionMetadata.InjectedElement injectedElement) {
+    protected String buildInjectedObjectCacheKey(AnnotationAttributes attributes, Object bean, String beanName,
+        Class<?> injectedType, InjectionMetadata.InjectedElement injectedElement) {
         return bean.getClass().getName() + "#" + injectedElement.getMember().getName();
     }
 
     @Override
-    public void onApplicationEvent(NacosConfigReceivedEvent nacosConfigReceivedEvent) {
-
+    public void onApplicationEvent(ApplicationEvent event) {
+        // 为了剔除nacos的依赖包
+        if (!NACOS_CONFIG_REVEIVED_EVENT_CLASS_NAME.equals(event.getClass().getName())) {
+            return;
+        }
         for (Map.Entry<String, List<ValueTarget>> entry : placeholderValueTargetMap.entrySet()) {
             String key = environment.resolvePlaceholders(entry.getKey());
             String newValue = environment.getProperty(key);
@@ -88,12 +98,11 @@ public class ValueAnnotationBeanPostProcessor extends AbstractAnnotationBeanPost
         }
     }
 
-
     private void setField(final ValueTarget valueTarget, final String propertyValue) {
         final Object bean = valueTarget.bean;
 
         Field field = valueTarget.field;
-        //String fieldName = field.getName();
+        // String fieldName = field.getName();
         try {
             ReflectionUtils.makeAccessible(field);
             field.set(bean, convertIfNecessary(field, propertyValue));
@@ -116,11 +125,10 @@ public class ValueAnnotationBeanPostProcessor extends AbstractAnnotationBeanPost
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
         if (!(beanFactory instanceof ConfigurableListableBeanFactory)) {
             throw new IllegalArgumentException(
-                    "NacosValueAnnotationBeanPostProcessor requires a ConfigurableListableBeanFactory");
+                "NacosValueAnnotationBeanPostProcessor requires a ConfigurableListableBeanFactory");
         }
-        this.beanFactory = (ConfigurableListableBeanFactory) beanFactory;
+        this.beanFactory = (ConfigurableListableBeanFactory)beanFactory;
     }
-
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
@@ -140,7 +148,7 @@ public class ValueAnnotationBeanPostProcessor extends AbstractAnnotationBeanPost
     }
 
     private void doWithAnnotation(String beanName, Object bean, Value annotation, int modifiers, Method method,
-                                  Field field) {
+        Field field) {
         if (annotation != null) {
             if (Modifier.isStatic(modifiers)) {
                 return;
