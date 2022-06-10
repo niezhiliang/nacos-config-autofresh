@@ -1,5 +1,6 @@
 package com.niezhiliang.nacos.refresh.autoconfigure;
 
+import com.niezhiliang.nacos.refresh.autoconfigure.postprocess.ValueAnnotationBeanPostProcessor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,8 +16,14 @@ import com.niezhiliang.nacos.refresh.autoconfigure.postprocess.NacosConfigRefres
 @ConditionalOnProperty(prefix = "nacos.config", name = "auto-refresh", havingValue = "true")
 public class NacosConfigRefreshAutoConfiguration {
 
-    @Bean
+    //@Bean
     public NacosConfigRefreshAnnotationPostProcess nacosRefreshAnnotationPostProcess() {
         return new NacosConfigRefreshAnnotationPostProcess();
+    }
+
+
+    @Bean
+    public ValueAnnotationBeanPostProcessor valueAnnotationBeanPostProcessor() {
+        return new ValueAnnotationBeanPostProcessor();
     }
 }
