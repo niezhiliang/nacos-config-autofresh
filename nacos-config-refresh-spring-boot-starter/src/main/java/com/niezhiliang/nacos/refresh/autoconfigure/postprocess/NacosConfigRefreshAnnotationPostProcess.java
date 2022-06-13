@@ -24,6 +24,7 @@ import com.alibaba.nacos.api.config.ConfigChangeItem;
 import com.alibaba.nacos.api.config.ConfigType;
 import com.alibaba.nacos.api.config.annotation.NacosConfigListener;
 import com.alibaba.nacos.api.config.annotation.NacosValue;
+import com.alibaba.spring.beans.factory.annotation.AbstractAnnotationBeanPostProcessor;
 import com.niezhiliang.nacos.refresh.autoconfigure.utils.NacosConfigPaserUtils;
 import com.niezhiliang.nacos.refresh.autoconfigure.utils.PlaceholderUtils;
 
