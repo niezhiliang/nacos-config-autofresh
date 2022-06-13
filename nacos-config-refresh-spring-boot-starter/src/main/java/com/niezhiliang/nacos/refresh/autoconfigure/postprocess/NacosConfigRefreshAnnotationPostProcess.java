@@ -6,8 +6,10 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
+import com.alibaba.nacos.spring.context.event.config.NacosConfigReceivedEvent;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.convert.ConversionService;
@@ -31,11 +33,12 @@ import com.niezhiliang.nacos.refresh.autoconfigure.utils.PlaceholderUtils;
 
 /**
  * @author niezhiliang
+ * @author haoxiaoyong
  * @version v0.0.1
  * @date 2022/6/7 17:31
  */
 public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationBeanPostProcessor
-    implements EnvironmentAware {
+    implements EnvironmentAware, ApplicationListener<NacosConfigReceivedEvent> {
 
     private final Logger logger = Logger.getLogger(NacosConfigRefreshAnnotationPostProcess.class.getName());
 
@@ -49,11 +52,6 @@ public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationB
      * nacos配置文件类型
      */
     private static final String NACOS_CONFIG_TYPE = "nacos.config.type";
-
-    /**
-     * nacos配置data-id的占位符
-     */
-    private static final String NACOS_DATA_ID_PLACEHOLDER = "${nacos.config.data-id}";
 
     /**
      * spring环境对象
@@ -107,7 +105,7 @@ public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationB
 
     @Override
     protected String buildInjectedObjectCacheKey(AnnotationAttributes annotationAttributes, Object o, String s,
-        Class<?> aClass, InjectionMetadata.InjectedElement injectedElement) {
+        Class<?> clazz, InjectionMetadata.InjectedElement injectedElement) {
         return o.getClass().getName() + "#" + injectedElement.getMember().getName();
     }
 
@@ -127,26 +125,6 @@ public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationB
     }
 
     /**
-     * 该注解支持占位符解析， 需要在拉取完配置后将nacos配置的data-id放到environment对象中 监听nacos配置更新操作
-     * 
-     * @param newContent
-     * @throws Exception
-     */
-    @NacosConfigListener(dataId = NACOS_DATA_ID_PLACEHOLDER)
-    public void onChange(String newContent) throws Exception {
-        // 将配置内容解析成键值对
-        Map<String, Object> newConfigMap = parseNacosConfigContext(newContent);
-
-        try {
-            // 刷新变更对象的值
-            refreshTargetObjectFieldValue(newConfigMap);
-        } finally {
-            // 当前配置指向最新的配置
-            currentPlaceholderConfigMap = newConfigMap;
-        }
-    }
-
-    /**
      * 刷新变更对象的值
      * 
      * @param newConfigMap
@@ -158,10 +136,14 @@ public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationB
 
         // 反射给对象赋值
         for (String key : configChangeItemMap.keySet()) {
+            // 没有用到的配置 直接跳过
+            if (!placeholderValueTargetMap.containsKey(key)) {
+                continue;
+            }
             ConfigChangeItem item = configChangeItemMap.get(key);
             // 删除配置不改变对象的值
             if (PropertyChangeType.DELETED.equals(item.getType())) {
-                logger.info("Nacos-config-refresh: deleted property [" + item.getKey() + "]");
+                logger.info("Nacos-config-refresh-starter: deleted property [" + item.getKey() + "]");
                 continue;
             }
             // 嵌套占位符 防止中途嵌套中的配置变了 导致对象属性刷新失败
@@ -195,6 +177,21 @@ public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationB
         }
         // 筛选出正确的配置
         return NacosConfigPaserUtils.getFlattenedMap(newConfigMap);
+    }
+
+    @Override
+    public void onApplicationEvent(NacosConfigReceivedEvent event) {
+        // 将配置内容解析成键值对
+        Map<String, Object> newConfigMap = null;
+        try {
+            newConfigMap = parseNacosConfigContext(event.getContent());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        // 刷新变更对象的值
+        refreshTargetObjectFieldValue(newConfigMap);
+        // 当前配置指向最新的配置
+        currentPlaceholderConfigMap = newConfigMap;
     }
 
     private static class FieldInstance {

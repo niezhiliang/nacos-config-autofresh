@@ -33,7 +33,9 @@ public class NacosConfigPaserUtils {
                 cci = new ConfigChangeItem(e.getKey(), e.getValue().toString(), null);
                 cci.setType(PropertyChangeType.DELETED);
             }
-
+            if (Objects.equals(cci.getNewValue(),cci.getOldValue())) {
+                continue;
+            }
             result.put(e.getKey(), cci);
         }
 

@@ -5,7 +5,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.niezhiliang.nacos.refresh.autoconfigure.postprocess.NacosConfigRefreshAnnotationPostProcess;
-import com.niezhiliang.nacos.refresh.autoconfigure.postprocess.ValueAnnotationBeanPostProcessor;
+
+import java.util.logging.Logger;
 
 /**
  * @author niezhiliang
@@ -16,13 +17,12 @@ import com.niezhiliang.nacos.refresh.autoconfigure.postprocess.ValueAnnotationBe
 @ConditionalOnProperty(prefix = "nacos.config", name = "auto-refresh", havingValue = "true")
 public class NacosConfigRefreshAutoConfiguration {
 
+    private final Logger logger = Logger.getLogger(NacosConfigRefreshAutoConfiguration.class.getName());
+
     @Bean
     public NacosConfigRefreshAnnotationPostProcess nacosRefreshAnnotationPostProcess() {
+        logger.info("\n--------------------------------------------\nNacos-config-refresh-starter load successful" +
+                "\n--------------------------------------------");
         return new NacosConfigRefreshAnnotationPostProcess();
-    }
-
-    // @Bean
-    public ValueAnnotationBeanPostProcessor valueAnnotationBeanPostProcessor() {
-        return new ValueAnnotationBeanPostProcessor();
     }
 }
