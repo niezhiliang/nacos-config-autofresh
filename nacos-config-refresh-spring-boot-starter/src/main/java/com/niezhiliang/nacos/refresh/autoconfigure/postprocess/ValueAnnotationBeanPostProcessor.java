@@ -26,6 +26,7 @@ import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.util.ReflectionUtils;
 
+import com.alibaba.spring.beans.factory.annotation.AbstractAnnotationBeanPostProcessor;
 import com.niezhiliang.nacos.refresh.autoconfigure.utils.MD5;
 
 /**
