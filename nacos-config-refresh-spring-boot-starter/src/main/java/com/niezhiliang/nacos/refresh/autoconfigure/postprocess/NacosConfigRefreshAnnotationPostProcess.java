@@ -22,6 +22,7 @@ import org.yaml.snakeyaml.Yaml;
 
 import com.alibaba.nacos.api.config.ConfigChangeItem;
 import com.alibaba.nacos.api.config.ConfigType;
+import com.alibaba.nacos.api.config.PropertyChangeType;
 import com.alibaba.nacos.api.config.annotation.NacosConfigListener;
 import com.alibaba.nacos.api.config.annotation.NacosValue;
 import com.alibaba.spring.beans.factory.annotation.AbstractAnnotationBeanPostProcessor;
@@ -158,6 +159,11 @@ public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationB
         // 反射给对象赋值
         for (String key : configChangeItemMap.keySet()) {
             ConfigChangeItem item = configChangeItemMap.get(key);
+            // 删除配置不改变对象的值
+            if (PropertyChangeType.DELETED.equals(item.getType())) {
+                logger.info("Nacos-config-refresh: deleted property [" + item.getKey() + "]");
+                continue;
+            }
             // 嵌套占位符 防止中途嵌套中的配置变了 导致对象属性刷新失败
             if (placeholderValueTargetMap.containsKey(item.getOldValue())) {
                 List<FieldInstance> fieldInstances = placeholderValueTargetMap.get(item.getOldValue());
