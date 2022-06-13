@@ -81,13 +81,26 @@ public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationB
     @Override
     protected Object doGetInjectedBean(AnnotationAttributes annotationAttributes, Object o, String s, Class<?> aClass,
         InjectionMetadata.InjectedElement injectedElement) throws Exception {
-        String key = (String)annotationAttributes.get("value");
-        key = PlaceholderUtils.parseStringValue(key, standardEnvironment, null);
+        // 注解占位符内容
+        String placaholderKey = (String)annotationAttributes.get("value");
+        // 解析嵌套占位符（只剩下最外层占位符）
+        placaholderKey = PlaceholderUtils.parseStringValue(placaholderKey, standardEnvironment, null);
+        // 剔除默认值后的占位符
+        String key = PlaceholderUtils.getPlaceholderKey(placaholderKey);
+        // 默认值
+        String defaultValue = PlaceholderUtils.getPlaceholderDefaultValue(placaholderKey);
 
         Field field = (Field)injectedElement.getMember();
         // 属性记录到缓存中
         addFieldInstance(key, field, o);
-        Object value = currentPlaceholderConfigMap.get(key);
+
+        // 环境对象中当前属性
+        String value = standardEnvironment.getProperty(key);
+        // 环境对象不存在该值，就取默认值
+        if (Objects.isNull(value)) {
+            value = defaultValue;
+        }
+        // 将字符串类型转换为目标属性类型
         return conversionService.convert(value, field.getType());
     }
 
@@ -139,12 +152,12 @@ public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationB
      */
     private void refreshTargetObjectFieldValue(Map<String, Object> newConfigMap) {
         // 对比两次配置内容，筛选出变更后的配置项
-        Map<String, ConfigChangeItem> stringConfigChangeItemMap =
+        Map<String, ConfigChangeItem> configChangeItemMap =
             NacosConfigPaserUtils.filterChangeData(currentPlaceholderConfigMap, newConfigMap);
 
         // 反射给对象赋值
-        for (String key : stringConfigChangeItemMap.keySet()) {
-            ConfigChangeItem item = stringConfigChangeItemMap.get(key);
+        for (String key : configChangeItemMap.keySet()) {
+            ConfigChangeItem item = configChangeItemMap.get(key);
             // 嵌套占位符 防止中途嵌套中的配置变了 导致对象属性刷新失败
             if (placeholderValueTargetMap.containsKey(item.getOldValue())) {
                 List<FieldInstance> fieldInstances = placeholderValueTargetMap.get(item.getOldValue());
@@ -213,18 +226,18 @@ public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationB
      */
     private void updateFieldValue(String key, String newValue, String oldValue) {
         List<FieldInstance> fieldInstances = placeholderValueTargetMap.get(key);
-        for (FieldInstance fieldInstance : fieldInstances) {
+        for (FieldInstance instance : fieldInstances) {
             try {
-                ReflectionUtils.makeAccessible(fieldInstance.field);
+                ReflectionUtils.makeAccessible(instance.field);
                 // 类型转换
-                Object value = conversionService.convert(newValue, fieldInstance.field.getType());
-                fieldInstance.field.set(fieldInstance.bean, value);
+                Object value = conversionService.convert(newValue, instance.field.getType());
+                instance.field.set(instance.bean, value);
             } catch (Throwable e) {
-                logger.warning("Can't update value of the " + fieldInstance.field.getName() + " (field) in "
-                    + fieldInstance.bean.getClass().getSimpleName() + " (bean)");
+                logger.warning("Can't update value of the " + instance.field.getName() + " (field) in "
+                    + instance.bean.getClass().getSimpleName() + " (bean)");
             }
-            logger.info("Nacos-config-refresh: " + fieldInstance.bean.getClass().getSimpleName() + "#"
-                + fieldInstance.field.getName() + " field value changed from [" + oldValue + "] to [" + newValue + "]");
+            logger.info("Nacos-config-refresh: " + instance.bean.getClass().getSimpleName() + "#"
+                + instance.field.getName() + " field value changed from [" + oldValue + "] to [" + newValue + "]");
         }
     }
 }

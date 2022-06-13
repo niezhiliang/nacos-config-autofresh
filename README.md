@@ -28,5 +28,6 @@ nacos:
 | :-----| ----: | :----: |
 | @Value 动态刷新 | @Value("${user.name}") | √ |
 | @NacosValue 动态刷新 | @NacosValue("${user.name}") | √ |
-| 占位符嵌套 | @Value("\${\${user.name}}") | √ |
-| 占位符嵌套默认值 | @Value("${user.name:zhangsan}") | × |
+| 占位符默认值 | @Value("${user.name:zhangsan}") | √ |
+| 占位符嵌套 | @Value("${${user.name}}") | √ |
+

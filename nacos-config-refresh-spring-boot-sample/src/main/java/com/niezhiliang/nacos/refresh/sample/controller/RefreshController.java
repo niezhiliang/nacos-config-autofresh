@@ -16,10 +16,10 @@ import com.alibaba.nacos.api.config.annotation.NacosValue;
 @RestController
 public class RefreshController implements EnvironmentAware {
 
-    @Value("${spring.count}")
-    public Integer valueName;
+    @Value("${${spring.application.name}}")
+    public String valueName;
 
-    @NacosValue("${spring.application.name}")
+    @NacosValue("${spring.application.name:helloWorld}")
     public String nacosValueName;
 
     private Environment environment;

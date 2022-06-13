@@ -29,6 +29,9 @@ public class PlaceholderUtils {
      */
     private static final String PLACEHOLDER_SUFFIX = "}";
 
+    /**
+     * 默认值前缀
+     */
     private static final String valueSeparator = ":";
 
     /**
@@ -83,7 +86,7 @@ public class PlaceholderUtils {
                     // Recursive invocation, parsing placeholders contained in the
                     // previously resolved placeholder value.
                     propVal = parseStringValue(propVal, environment, visitedPlaceholders);
-                    result.replace(startIndex, endIndex + PLACEHOLDER_PREFIX.length(), propVal);
+                    result.replace(startIndex, endIndex + PLACEHOLDER_SUFFIX.length(), propVal);
                     startIndex = result.indexOf(PLACEHOLDER_PREFIX, startIndex + propVal.length());
                 } else {
                     throw new IllegalArgumentException(
@@ -117,5 +120,28 @@ public class PlaceholderUtils {
             }
         }
         return -1;
+    }
+
+    /**
+     * 获取占位符key
+     *
+     * @param placeholder
+     * @return
+     */
+    public static String getPlaceholderKey(String placeholder) {
+        return placeholder.split(valueSeparator)[0];
+    }
+
+    /**
+     * 获取占位符默认值
+     *
+     * @param placeholder
+     * @return
+     */
+    public static String getPlaceholderDefaultValue(String placeholder) {
+        if (placeholder.contains(valueSeparator)) {
+            return placeholder.split(valueSeparator)[1];
+        }
+        return null;
     }
 }
