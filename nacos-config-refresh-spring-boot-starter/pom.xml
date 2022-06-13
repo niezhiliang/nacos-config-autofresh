@@ -15,7 +15,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
-        <spring-boot.version>2.0.2.RELEASE</spring-boot.version>
+        <spring-boot.version>2.3.8.RELEASE</spring-boot.version>
         <nacos-api.version>1.2.0</nacos-api.version>
         <snakeyaml.version>1.27</snakeyaml.version>
         <spring.context.support>1.0.5</spring.context.support>
@@ -32,6 +32,10 @@
             <name>niezhiliang</name>
             <email>nzlsgg@163.com</email>
             <url>https://github.com/niezhiliang</url>
+        </developer>
+        <developer>
+            <name>haoxiaoyong</name>
+            <url>https://github.com/haoxiaoyong1014</url>
         </developer>
     </developers>
 
