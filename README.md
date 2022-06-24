@@ -8,7 +8,7 @@
 <dependency>
     <groupId>com.niezhiliang</groupId>
     <artifactId>nacos-config-refresh-spring-boot-starter</artifactId>
-    <version>${latest.version}</version>
+    <version>0.1.0</version>
 </dependency>
 ```
 
@@ -20,7 +20,7 @@ nacos:
     auto-refresh: true
 ```
 
-### 项目开发中，配置刷新功能已实现，后续代码优化完善后会推到maven中央仓库
+### 项目开发中，配置刷新功能已实现，jar包已推到maven中央仓库，可以直接依赖就能用，有问题请提issues
 
 ### 功能列表
 
