@@ -239,7 +239,7 @@ public class NacosConfigRefreshAnnotationPostProcess extends AbstractAnnotationB
                 logger.warning("Can't update value of the " + instance.field.getName() + " (field) in "
                     + instance.bean.getClass().getSimpleName() + " (bean)");
             }
-            logger.info("Nacos-config-refresh: " + instance.bean.getClass().getSimpleName() + "#"
+            logger.info("Nacos-config-refresh-starter: " + instance.bean.getClass().getSimpleName() + "#"
                 + instance.field.getName() + " field value changed from [" + oldValue + "] to [" + newValue + "]");
         }
     }
