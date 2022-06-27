@@ -6,7 +6,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-import com.alibaba.nacos.spring.context.event.config.NacosConfigReceivedEvent;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
@@ -25,8 +24,8 @@ import org.yaml.snakeyaml.Yaml;
 import com.alibaba.nacos.api.config.ConfigChangeItem;
 import com.alibaba.nacos.api.config.ConfigType;
 import com.alibaba.nacos.api.config.PropertyChangeType;
-import com.alibaba.nacos.api.config.annotation.NacosConfigListener;
 import com.alibaba.nacos.api.config.annotation.NacosValue;
+import com.alibaba.nacos.spring.context.event.config.NacosConfigReceivedEvent;
 import com.alibaba.spring.beans.factory.annotation.AbstractAnnotationBeanPostProcessor;
 import com.niezhiliang.nacos.refresh.autoconfigure.utils.NacosConfigPaserUtils;
 import com.niezhiliang.nacos.refresh.autoconfigure.utils.PlaceholderUtils;
