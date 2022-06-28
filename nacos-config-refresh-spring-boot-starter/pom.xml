@@ -6,7 +6,7 @@
 
     <groupId>com.niezhiliang</groupId>
     <artifactId>nacos-config-refresh-spring-boot-starter</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
     <packaging>jar</packaging>
     <modelVersion>4.0.0</modelVersion>
 
@@ -19,6 +19,7 @@
         <nacos-api.version>1.2.0</nacos-api.version>
         <snakeyaml.version>1.27</snakeyaml.version>
         <spring.context.support>1.0.5</spring.context.support>
+        <nacos.spring.context>1.1.1</nacos.spring.context>
     </properties>
 
 
@@ -68,8 +69,7 @@
         <dependency>
             <groupId>com.alibaba.nacos</groupId>
             <artifactId>nacos-spring-context</artifactId>
-            <version>1.1.1</version>
-            <scope>compile</scope>
+            <version>${nacos.spring.context}</version>
         </dependency>
     </dependencies>
 
