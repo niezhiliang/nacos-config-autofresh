@@ -20,6 +20,15 @@ nacos:
     auto-refresh: true
 ```
 
+- 组件加载成功会输出如下日志
+
+```yaml
+2022-06-30 09:25:26.198  INFO 16828 --- [           main] .r.a.NacosConfigRefreshAutoConfiguration:
+  --------------------------------------------
+  Nacos-config-refresh-starter load successful
+  --------------------------------------------
+```
+
 ### 项目开发中，配置刷新功能已实现，jar包已推到maven中央仓库，可以直接依赖就能用，有问题请提issues
 
 ### 功能列表
